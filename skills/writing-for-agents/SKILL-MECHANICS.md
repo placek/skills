@@ -2,6 +2,8 @@
 
 The skill-specific branch of [`writing-for-agents`](SKILL.md): what changes when the document is a skill (frontmatter, the invocation choice, and router skills). Everything else about writing it is the universal reference in `SKILL.md`.
 
+**Hermes note.** Hermes has no user-invoked mode: it ignores `disable-model-invocation`, lists every skill's `description` in its index, and exposes every skill as a `/skill-name` command. In this repo a "user-invoked" skill is simply one with a short, human-facing description and no trigger phrases, so the model rarely reaches for it on its own. Skills reach each other with `skill_view` ("Load the `grilling` skill"), and a skill's own reference files load with `skill_view(name, path)`.
+
 ## Invocation
 
 Two choices, trading the two loads:
