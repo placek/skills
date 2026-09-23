@@ -1,12 +1,11 @@
 ---
 name: to-spec
-description: "Turn the current conversation into a spec and publish it to the project issue tracker: no interview, just synthesis of what you've already discussed."
-disable-model-invocation: true
+description: "Turn the current conversation into a spec and save it to `.todo/`: no interview, just synthesis of what you've already discussed."
 ---
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user; just synthesize what you already know.
 
-The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
+Issues live as markdown files in `.todo/` at the repo root (create it if missing). The spec goes to `.todo/<feature-slug>/spec.md`.
 
 ## Process
 
@@ -16,9 +15,13 @@ The issue tracker and triage label vocabulary should have been provided to you. 
 
 Check with the user that these seams match their expectations.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the spec using the template below and save it to `.todo/<feature-slug>/spec.md`. Put a `Status: ready-for-agent` line under the title - no need for additional triage.
 
 <spec-template>
+
+# <Feature title>
+
+Status: ready-for-agent
 
 ## Problem Statement
 
