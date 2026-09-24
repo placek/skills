@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Run a feature end to end through the other skills: grill the idea, spec and ticket it, implement with tests, verify, document, report. Resumes from `.todo/<feature>/` when re-run."
+description: "Run a feature end to end through the other skills: grill the idea, spec and ticket it, agree the tests, implement red-green, verify, document, report. Resumes from `.todo/<feature>/` when re-run."
 ---
 
 # Ship
@@ -8,11 +8,11 @@ description: "Run a feature end to end through the other skills: grill the idea,
 Drive one piece of work from a loose idea to a verified, documented, reported change, by running the other skills in order. Ship itself decides nothing about the code; it decides **which skill runs next**, records where you are, and holds the gates.
 
 ```
-vision  →  plan  →  implement  →  verify  →  document  →  report  →  finish
- (gate)     (gate)
+vision  →  plan  →  tests  →  implement  →  verify  →  document  →  report  →  finish
+ (gate)     (gate)   (gate)
 ```
 
-Two gates stop for the user: after **vision** (shared understanding) and after **plan** (tickets approved). From there ship runs to the end without check-ins. Only four things stop it: an irreversible or destructive operation; a security-sensitive action; a side effect outside the repo (a merge, a push, a publish); or a plan so broken that every path forward is a guess. Everything else is a **ruling**: decide, record it in the ship log as `Ruling: <what> - <why> - <cost if wrong>`, keep going.
+Three gates stop for the user: after **vision** (shared understanding), after **plan** (tickets approved), and after **tests** (seams and test plan agreed). From there ship runs to the end without check-ins. Only four things stop it: an irreversible or destructive operation; a security-sensitive action; a side effect outside the repo (a merge, a push, a publish); or a plan so broken that every path forward is a guess. Everything else is a **ruling**: decide, record it in the ship log as `Ruling: <what> - <why> - <cost if wrong>`, keep going.
 
 ## State and resume
 
@@ -25,6 +25,7 @@ Branch: feature/<slug>
 
 - [x] vision (shared understanding reached)
 - [x] plan (4 tickets approved)
+- [ ] tests
 - [ ] implement
 - [ ] verify
 - [ ] document
@@ -59,9 +60,25 @@ Load the `to-spec` skill (`skill_view`): synthesise the conversation into `.todo
 
 Append the `## Ship` section to `spec.md`, tick `plan` with the ticket count, commit `.todo/` on the branch.
 
-### 3. Implement
+### 3. Tests
 
-Load the `implement` skill (`skill_view`); it drives `tdd` per ticket and keeps ticket `Status:` lines current. Work the frontier in number order.
+Load the `tdd` skill (`skill_view`). Its rule is that tests are written only at **pre-agreed seams**, so agree them now, before any code:
+
+1. From the spec's Testing Decisions, list every seam under test: the public interface, what behaviour it must show, which tickets it covers. Prefer existing seams; one is ideal.
+2. For each seam, name the kind of test (through the interface, integration-style; mocks only at system boundaries), the prior art in the codebase it should resemble, and the exact command that runs it.
+3. Turn each ticket's acceptance criteria into the test names that will prove them, one line each, written into the ticket under `## Tests`. No test bodies yet: bulk tests written before the code verify imagined behaviour, which `tdd` names as an anti-pattern. The bodies are written one at a time in step 4, each before its implementation.
+4. Present seams, test kinds, and the per-ticket test names and **stop for the gate**: the user confirms or moves the seams.
+
+Tick `tests`.
+
+### 4. Implement
+
+Load the `implement` skill (`skill_view`); it keeps ticket `Status:` lines current. Work the frontier in number order, and every ticket is red-green:
+
+- Take the first test name from the ticket's `## Tests`. Write it, run it, **see it fail**. A test that passes before the implementation exists is a finding about the test.
+- Write the minimum code that makes it pass. Run it, see it pass. Commit.
+- Next test name. Refactoring waits for step 5.
+- A ticket is `done` only when every test named for it exists, has been seen red then green, and its acceptance criteria are ticked.
 
 **Subagents.** If there are four or more tickets and the frontier holds independent ones, offer to dispatch a fresh subagent per frontier ticket. Each subagent gets exactly: the ticket file, `spec.md`, `CONTEXT.md` if present, and an instruction to load `tdd`. Nothing from this conversation. When one returns, do not trust its report: read `git diff` for its commits and run its tests yourself before marking the ticket done. Default is inline when the user does not ask.
 
@@ -69,18 +86,18 @@ Do not stop between tickets. Plan defects are rulings. If a test will not go gre
 
 Tick `implement` when every ticket is `Status: done`.
 
-### 4. Verify
+### 5. Verify
 
 Load the `verify` skill (`skill_view`) and hold to it for the rest of the run.
 
 1. Run the project's full checks: typecheck, lint, test suite, build. All green, evidence in this session.
 2. Walk the spec's acceptance criteria and user stories one by one against the running code. Tick each in the ticket files; a criterion you cannot demonstrate is not met.
-3. Load `code-review` (`skill_view`) against the branch's merge base. Fix every Standards or Spec finding that would affect a person using the software: reproduce with a failing test, make it pass, rerun the full checks. Findings you decline become rulings. Minor polish is listed for the report, not fixed.
+3. Load `code-review` (`skill_view`) against the branch's merge base. Fix every Standards or Spec finding that would affect a person using the software: reproduce with a failing test, make it pass, rerun the full checks. This is also where refactoring belongs (`refactor` if it is more than a local cleanup). Findings you decline become rulings. Minor polish is listed for the report, not fixed.
 4. Repeat 1-3 until a pass produces no fixes.
 
 Tick `verify` with the commands and results (`tests 84/84, tsc clean, build ok`).
 
-### 5. Document
+### 6. Document
 
 Documentation is part of the change, not an afterthought.
 
@@ -90,13 +107,13 @@ Documentation is part of the change, not an afterthought.
 
 Tick `document`.
 
-### 6. Report
+### 7. Report
 
 Load the `to-report` skill (`skill_view`) and write a **change summary** for the person who asked for the feature, saved to `.todo/<slug>/report.md`. If the run stopped short (a spike, a blocker), write a progress report instead.
 
 Set `spec.md`'s `Status:` to `done`, tick `report`, commit.
 
-### 7. Finish
+### 8. Finish
 
 Run the full checks once more on the final tree (evidence, again). Then present exactly this and wait:
 
@@ -116,7 +133,7 @@ End with two lists in your final message, both exhaustive: **Rulings I made** (f
 
 - It does not re-grill on resume: a checked stage is done.
 - It does not skip a gate because the answer seems obvious. Present, then wait.
-- It does not merge, push, or publish without the user choosing it in step 7.
+- It does not merge, push, or publish without the user choosing it in step 8.
 - It does not fix bugs or refactor beyond the tickets. Those are new tickets, or a `refactor` session.
 
 ## Credits
