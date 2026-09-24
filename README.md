@@ -20,7 +20,7 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ### Pipeline
 
-- **[ship](./skills/ship/SKILL.md)**: Run a feature end to end through the skills below: vision → plan → tests → implement → verify → document → report → finish. Three gates (after vision, plan, and the test plan), then it runs unattended. Re-run `/ship <feature>` to resume from `.todo/<feature>/`.
+- **[ship](./skills/ship/SKILL.md)**: Run a feature end to end through the skills below: vision → plan → acceptance → implement → verify → document → report → finish. Three gates (after vision, plan, and the red acceptance tests), then it runs unattended. Re-run `/ship <feature>` to resume from `.todo/<feature>/`.
 
 ### Planning
 
@@ -57,7 +57,7 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ### Typical flow
 
-`/ship <feature>` runs the whole chain: `grill-with-docs` → `to-spec` → `to-tickets` → `tdd` (agree seams and test names) → `implement` (red-green per ticket) → `verify` + `code-review` → docs and `domain-modeling` → `to-report` → merge / PR menu. Each step is also a skill you can run on its own. For work too big for one session, start with `/wayfinder`.
+`/ship <feature>` runs the whole chain: `grill-with-docs` → `to-spec` → `to-tickets` → `tdd` outer loop (failing acceptance tests) → `implement` (inner red-green loop per ticket) → `verify` + `code-review` → docs and `domain-modeling` → `to-report` → merge / PR menu. Each step is also a skill you can run on its own. For work too big for one session, start with `/wayfinder`.
 
 ## Issues: the `.todo/` directory
 

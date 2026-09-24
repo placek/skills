@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Run a feature end to end through the other skills: grill the idea, spec and ticket it, agree the tests, implement red-green, verify, document, report. Resumes from `.todo/<feature>/` when re-run."
+description: "Run a feature end to end through the other skills: grill the idea, spec and ticket it, write failing acceptance tests, implement outside-in, verify, document, report. Resumes from `.todo/<feature>/` when re-run."
 ---
 
 # Ship
@@ -8,11 +8,11 @@ description: "Run a feature end to end through the other skills: grill the idea,
 Drive one piece of work from a loose idea to a verified, documented, reported change, by running the other skills in order. Ship itself decides nothing about the code; it decides **which skill runs next**, records where you are, and holds the gates.
 
 ```
-vision  →  plan  →  tests  →  implement  →  verify  →  document  →  report  →  finish
- (gate)     (gate)   (gate)
+vision  →  plan  →  acceptance  →  implement  →  verify  →  document  →  report  →  finish
+ (gate)     (gate)     (gate)
 ```
 
-Three gates stop for the user: after **vision** (shared understanding), after **plan** (tickets approved), and after **tests** (seams and test plan agreed). From there ship runs to the end without check-ins. Only four things stop it: an irreversible or destructive operation; a security-sensitive action; a side effect outside the repo (a merge, a push, a publish); or a plan so broken that every path forward is a guess. Everything else is a **ruling**: decide, record it in the ship log as `Ruling: <what> - <why> - <cost if wrong>`, keep going.
+Three gates stop for the user: after **vision** (shared understanding), after **plan** (tickets approved), and after **acceptance** (the acceptance tests that frame the work are written and red). From there ship runs to the end without check-ins. Only four things stop it: an irreversible or destructive operation; a security-sensitive action; a side effect outside the repo (a merge, a push, a publish); or a plan so broken that every path forward is a guess. Everything else is a **ruling**: decide, record it in the ship log as `Ruling: <what> - <why> - <cost if wrong>`, keep going.
 
 ## State and resume
 
@@ -25,7 +25,7 @@ Branch: feature/<slug>
 
 - [x] vision (shared understanding reached)
 - [x] plan (4 tickets approved)
-- [ ] tests
+- [ ] acceptance
 - [ ] implement
 - [ ] verify
 - [ ] document
@@ -60,27 +60,30 @@ Load the `to-spec` skill (`skill_view`): synthesise the conversation into `.todo
 
 Append the `## Ship` section to `spec.md`, tick `plan` with the ticket count, commit `.todo/` on the branch.
 
-### 3. Tests
+### 3. Acceptance
 
-Load the `tdd` skill (`skill_view`). Its rule is that tests are written only at **pre-agreed seams**, so agree them now, before any code:
+This is **outside-in TDD** (the double loop): an outer loop of acceptance tests written now from the spec, and an inner loop of unit-level red-green per ticket in step 4. Load the `tdd` skill (`skill_view`) for the seam vocabulary and the test rules; both loops follow them.
 
-1. From the spec's Testing Decisions, list every seam under test: the public interface, what behaviour it must show, which tickets it covers. Prefer existing seams; one is ideal.
-2. For each seam, name the kind of test (through the interface, integration-style; mocks only at system boundaries), the prior art in the codebase it should resemble, and the exact command that runs it.
-3. Turn each ticket's acceptance criteria into the test names that will prove them, one line each, written into the ticket under `## Tests`. No test bodies yet: bulk tests written before the code verify imagined behaviour, which `tdd` names as an anti-pattern. The bodies are written one at a time in step 4, each before its implementation.
-4. Present seams, test kinds, and the per-ticket test names and **stop for the gate**: the user confirms or moves the seams.
+**Acceptance tests** are the frame for the implementation: they say what the software must do for a person, at the highest seam, and they all start red. They are not a specification of the code's shape.
 
-Tick `tests`.
+1. Pick the seam. The highest one available: the HTTP or CLI surface, the application service, the UI flow. The spec's Testing Decisions should name it. If the project has no seam an end-to-end test can drive cheaply (no integration harness, no test database, no app-level entry point), building that seam is the first ticket; do not fall back to unit tests and call them acceptance tests.
+2. Write one failing acceptance test per user story in the spec (one per ticket where stories are too coarse). Each asserts an **outcome** the story's actor can observe, in the domain's vocabulary, with expected values taken from the spec, never derived from the code. Mocks only at system boundaries.
+3. Run them. Every one must fail, for the right reason (the behaviour is missing, not a typo). Record which tests cover which tickets under `## Tests` in each ticket file.
+4. Show the list and the red run, and **stop for the gate**: the user confirms these are the right outcomes, or changes them.
+
+Tick `acceptance`.
+
+**Hardening.** Acceptance tests are soft on detail and hard on outcome. As implementation fixes the details the spec left open (an exact message, a field name, the shape of a fixture, the order of two steps), update the test to match; that is the test hardening, and it is expected. Loosening an assertion because the code "works" is not: that turns the frame into a tautology. The rule that separates the two is that **every change to an acceptance test after the gate is a ruling** in the ship log (`Ruling: acceptance 03 now expects net not gross - spec said "amount", chose net - cost if wrong: one column`). A silent edit to an acceptance test is the one forbidden move.
 
 ### 4. Implement
 
-Load the `implement` skill (`skill_view`); it keeps ticket `Status:` lines current. Work the frontier in number order, and every ticket is red-green:
+Load the `implement` skill (`skill_view`); it keeps ticket `Status:` lines current. Work the frontier in number order. Each ticket is the inner loop of `tdd`, driven by its acceptance tests:
 
-- Take the first test name from the ticket's `## Tests`. Write it, run it, **see it fail**. A test that passes before the implementation exists is a finding about the test.
-- Write the minimum code that makes it pass. Run it, see it pass. Commit.
-- Next test name. Refactoring waits for step 5.
-- A ticket is `done` only when every test named for it exists, has been seen red then green, and its acceptance criteria are ticked.
+- Run the ticket's acceptance tests; they are red. Take the first unit-level behaviour needed to move them: write the failing unit test, see it fail, write the minimum code, see it pass, commit. Repeat.
+- When the ticket's acceptance tests go green, the ticket is `done`, with its acceptance criteria ticked. Not before.
+- Refactoring waits for step 5. Acceptance-test changes are rulings (see Hardening).
 
-**Subagents.** If there are four or more tickets and the frontier holds independent ones, offer to dispatch a fresh subagent per frontier ticket. Each subagent gets exactly: the ticket file, `spec.md`, `CONTEXT.md` if present, and an instruction to load `tdd`. Nothing from this conversation. When one returns, do not trust its report: read `git diff` for its commits and run its tests yourself before marking the ticket done. Default is inline when the user does not ask.
+**Subagents.** If there are four or more tickets and the frontier holds independent ones, offer to dispatch a fresh subagent per frontier ticket. Each subagent gets exactly: the ticket file, its acceptance tests, `spec.md`, `CONTEXT.md` if present, and an instruction to load `tdd`. Nothing from this conversation. When one returns, do not trust its report: read `git diff` for its commits and run the ticket's acceptance tests yourself before marking it done. Default is inline when the user does not ask.
 
 Do not stop between tickets. Plan defects are rulings. If a test will not go green and the cause is not obvious, load `diagnosing-bugs` rather than guessing.
 
