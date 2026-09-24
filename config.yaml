@@ -756,6 +756,10 @@ web:
   # Explicit binary path. Unset = $HERMES_DEFUDDLE_BIN, then $PATH, then
   # ~/.hermes/tools/defuddle/node_modules/.bin/defuddle.
   defuddle_bin: ''
+  # User-Agent defuddle fetches with. Sites that fingerprint the default Node
+  # UA answer 403 (Medium and most CDN-fronted blogs); the provider sends a
+  # browser UA by default. Set to '' to send no --user-agent flag at all.
+  # defuddle_user_agent: 'Mozilla/5.0 ...'
 
   # One-shot retry on the keyless ring when the pinned backend fails a call.
   keyless_fallback: true

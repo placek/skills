@@ -41,6 +41,13 @@ _MAX_WORKERS = 4
 # Checked after $HERMES_DEFUDDLE_BIN / web.defuddle_bin / $PATH. Matches the install in README.
 _VENDORED_BIN = Path.home() / ".hermes" / "tools" / "defuddle" / "node_modules" / ".bin" / "defuddle"
 
+# Sites that fingerprint the default Node fetch UA answer 403 (Medium, many CDN-fronted blogs);
+# defuddle documents --user-agent as the remedy. Overridable via web.defuddle_user_agent.
+_DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/140.0.0.0 Safari/537.36"
+)
+
 _INSTALL_HINT = (
     "defuddle CLI not found. Install it with:\n"
     "  mkdir -p ~/.hermes/tools/defuddle && cd ~/.hermes/tools/defuddle && npm install defuddle\n"
@@ -86,6 +93,12 @@ def _timeout_seconds() -> int:
         return _DEFAULT_TIMEOUT_S
 
 
+def _user_agent() -> str:
+    """UA sent by defuddle's fetch. Empty string in config disables the flag entirely."""
+    raw = _web_config().get("defuddle_user_agent", _DEFAULT_USER_AGENT)
+    return "" if raw is None else str(raw)
+
+
 def _subprocess_env() -> Dict[str, str]:
     """Sanitized child env when Hermes exposes its helper, else the inherited env."""
     env = dict(os.environ)
@@ -106,6 +119,8 @@ def _parse_one(binary: str, url: str, want_html: bool, timeout: int) -> Dict[str
     cmd = [binary, "parse", url, "--json"]
     if not want_html:
         cmd.append("--markdown")
+    if agent := _user_agent():
+        cmd += ["--user-agent", agent]
     try:
         proc = subprocess.run(  # noqa: S603 — fixed argv, no shell
             cmd,

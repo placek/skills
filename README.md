@@ -68,6 +68,10 @@ defuddle`; the provider is extract-only, so search keeps using its own backend.
 If the binary goes missing the whole batch fails, which trips Hermes' one-shot
 keyless rescue — extraction degrades to the keyless ring instead of breaking.
 
+The plugin also sends a browser `User-Agent` (`web.defuddle_user_agent`).
+Without it, sites that fingerprint the default Node fetch UA answer `403` —
+Medium went from `403 Forbidden` to 4,435 characters of article text.
+
 Note the asymmetry with skills: **plugin** discovery uses `iterdir()`, which
 *does* follow symlinks, so linking `plugins/` (or a single plugin inside it)
 both work. Skill discovery uses `rglob`, which does not.
