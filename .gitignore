@@ -11,3 +11,7 @@ skills/.curator_state
 skills/.curator_ledger.jsonl
 skills/.archive/
 skills/.curator_backups/
+
+# Python bytecode from the user plugins Hermes loads out of plugins/.
+__pycache__/
+*.pyc

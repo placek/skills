@@ -532,6 +532,7 @@ agent:
     - "Delegate to Claude Code with a written brief, not a one-liner: the goal, the files or seam involved, the acceptance check, and the constraint that it must not touch anything else. Then REVIEW what comes back and run the tests yourself. Its report is a claim, not evidence; /verify still applies to work you delegated."
     - "Keep the outer loop yourself. You decide the plan, the tickets, and the gates; Claude Code executes a bounded slice. Never hand it /ship, an unscoped 'make it work', or the decision about whether something is done."
     - "Research is available and keyless: web_search finds sources, web_extract reads the page. Use /research for anything non-trivial (it runs in the background and writes a cited file). Never answer a factual or API question from memory when a primary source is one search away, and cite what you actually read rather than the search snippet."
+    - "web_extract runs every page through Defuddle, which strips it to the main article and returns markdown. So a search hit is a lead, not a source: open it with web_extract before you rely on it or quote it. Extraction is cheap and the output is clean enough to read in full — there is no excuse for answering from a snippet."
 
   # Forced true, NOT "auto". "auto" substring-matches the model NAME against
   # ("gpt","codex","grok","deepseek","kimi","qwen","glm",...) — the models here
@@ -642,6 +643,9 @@ plugins:
     # Set TAVILY_API_KEY / FIRECRAWL_API_KEY in the profile .env for higher limits.
     - web/tavily
     - web/firecrawl
+    # Local user plugin (plugins/web/defuddle/ in this repo, symlinked to the
+    # profile's plugins/ dir). Pinned as web.extract_backend below.
+    - web/defuddle
   disabled:
     # web/ddgs is keyless but needs the `ddgs` PyPI package, and this Nix build
     # ships a sealed interpreter (no pip, ENABLE_USER_SITE=False), so it can
@@ -734,6 +738,28 @@ plugins:
     - web/parallel
     - web/searxng
     - web/xai
+
+web:
+  # Every web_extract call goes through Defuddle (plugins/web/defuddle/), which
+  # strips a page to its main content instead of handing the model a nav-and-
+  # sidebar dump. Fewer tokens, and quotes that come from the article body.
+  #
+  # Safe to pin: an explicitly configured backend wins even when it is
+  # unavailable, but a whole-batch failure triggers Hermes' one-shot keyless
+  # rescue, so a missing binary degrades to the keyless ring instead of
+  # breaking web_extract. Search is untouched (Defuddle is extract-only).
+  extract_backend: defuddle
+
+  # Per-URL wall clock for the defuddle CLI; it fetches the page itself, so this
+  # covers network + parse.
+  defuddle_timeout: 60
+  # Explicit binary path. Unset = $HERMES_DEFUDDLE_BIN, then $PATH, then
+  # ~/.hermes/tools/defuddle/node_modules/.bin/defuddle.
+  defuddle_bin: ''
+
+  # One-shot retry on the keyless ring when the pinned backend fails a call.
+  keyless_fallback: true
+  keyless_rescue: true
 
 security:
   redact_secrets: true

@@ -44,6 +44,57 @@ hermes -p locoder skills list                 # or just: locoder
 `bundled-skills/` is a second read-only scan root, listed under
 `skills.external_dirs` in `config.yaml` as a profile-relative path.
 
+### Web extraction with Defuddle
+
+[`plugins/web/defuddle/`](./plugins/web/defuddle/) is a Hermes web-provider
+plugin that routes every `web_extract` call through
+[kepano/defuddle](https://github.com/kepano/defuddle) — the main-content
+extractor behind Obsidian Web Clipper. It returns the article body as markdown
+instead of a page dump, which is what makes `/research` quote sources rather
+than sidebars. On Wikipedia's write-ahead logging page, the previous backend
+opened with the *"Find sources: …"* maintenance banner; Defuddle opens with the
+first sentence of the article.
+
+It needs the Node CLI, which is **not** bundled:
+
+```sh
+mkdir -p ~/.hermes/tools/defuddle && cd ~/.hermes/tools/defuddle && npm install defuddle
+ln -s $REPO/plugins ~/.hermes/profiles/locoder/plugins
+```
+
+The binary is found via `$HERMES_DEFUDDLE_BIN`, then `web.defuddle_bin`, then
+`$PATH`, then that vendored path. `config.yaml` pins `web.extract_backend:
+defuddle`; the provider is extract-only, so search keeps using its own backend.
+If the binary goes missing the whole batch fails, which trips Hermes' one-shot
+keyless rescue — extraction degrades to the keyless ring instead of breaking.
+
+Note the asymmetry with skills: **plugin** discovery uses `iterdir()`, which
+*does* follow symlinks, so linking `plugins/` (or a single plugin inside it)
+both work. Skill discovery uses `rglob`, which does not.
+
+Two things worth knowing before you change that layout:
+
+- **The `skills/` symlink must be the scan root.** Skill discovery is
+  `Path.rglob("**/SKILL.md")`, which refuses to descend into symlinked
+  *subdirectories* — a link dropped *inside* a skills dir finds nothing. Link
+  whole roots, or use `skills.external_dirs` (each entry is its own root).
+- **Hermes writes runtime state into the skills dir** (`.hub/`, `.usage.json`).
+  [`.gitignore`](./.gitignore) covers it.
+
+What `config.yaml` tunes, beyond the model/provider block:
+
+- `agent.coding_context: focus` — coding brief plus a live git snapshot, lean
+  coding toolset, non-coding skill categories demoted to names-only.
+- `agent.coding_instructions` — the standing rules that make these skills the
+  default method (`/ship`, `/tdd`, `/verify`, `.todo/`, delegation, research).
+- `agent.tool_use_enforcement` / `execution_guidance` forced **`true`**, not
+  `auto`: `auto` matches on the *model name* (`gpt`, `codex`, `qwen`, …), so a
+  locally-served model called `coder` silently gets neither.
+- `agent.verify_on_stop: auto` — the runtime half of the `verify` skill.
+- `skills.auto_load: [verify]` — the one rule that must never be a recall miss.
+- **Delegation to Claude Code** for work too big for a local context (see the
+  `claude-code` skill), and a keyless web-research ring for `research`.
+
 ## Skills
 
 ### Pipeline
