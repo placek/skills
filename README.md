@@ -33,6 +33,7 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 - **[implement](./skills/implement/SKILL.md)**: Build the tickets, test-first, then review and commit.
 - **[tdd](./skills/tdd/SKILL.md)**: Red-green loop at pre-agreed seams.
+- **[refactor](./skills/refactor/SKILL.md)**: Behaviour-preserving cleanup in small test-gated steps; green before, green after, revert on red.
 - **[code-review](./skills/code-review/SKILL.md)**: Two-axis review (standards and spec) of a diff, run as parallel sub-agents.
 - **[diagnosing-bugs](./skills/diagnosing-bugs/SKILL.md)**: Feedback-loop-first diagnosis for hard bugs and performance regressions.
 - **[codebase-design](./skills/codebase-design/SKILL.md)**: Deep-module vocabulary: module, interface, depth, seam, adapter.
@@ -99,6 +100,7 @@ Rejected enhancements are recorded in `.out-of-scope/` (see the triage skill).
 ## Changes from upstream
 
 - Dropped: `ask-matt`, `setup-matt-pocock-skills`, `teach`, `wizard`, and everything in upstream's `misc/`, `in-progress/`, and `deprecated/`.
+- Added: `refactor` (not from upstream; distilled from three MIT-licensed refactoring skills, credited inside it).
 - The GitHub, GitLab, and "configure your tracker" branches are gone. `to-spec`, `to-tickets`, `triage`, `wayfinder`, `code-review`, and `implement` use `.todo/` directly.
 - `implement` updates ticket `Status:` lines as it works.
 - "Call the Skill tool with X" became "Load the `X` skill (`skill_view`)", which is how Hermes loads a skill.
