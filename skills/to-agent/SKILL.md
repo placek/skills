@@ -1,5 +1,5 @@
 ---
-name: handoff
+name: to-agent
 description: Compact the current conversation into a handoff document for another agent to pick up.
 ---
 

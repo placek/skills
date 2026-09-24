@@ -49,8 +49,8 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ### Productivity
 
-- **[handoff](./skills/handoff/SKILL.md)**: Compact the conversation into a handoff doc for a fresh agent.
-- **[to-report](./skills/to-report/SKILL.md)**: Like handoff, but for a person: a plain-language progress report, change summary, how-to, or explainer from this session.
+- **[to-agent](./skills/to-agent/SKILL.md)**: Compact the conversation into a handoff doc for a fresh agent.
+- **[to-report](./skills/to-report/SKILL.md)**: Like `to-agent`, but for a person: a plain-language progress report, change summary, how-to, or explainer from this session.
 - **[wait-what](./skills/wait-what/SKILL.md)**: Make the agent re-pitch a message that didn't land.
 - **[to-questionnaire](./skills/to-questionnaire/SKILL.md)**: Turn a decision you can't make alone into a questionnaire for someone who can.
 - **[writing-for-agents](./skills/writing-for-agents/SKILL.md)**: How to write skills, `AGENTS.md`, and other docs agents read.
@@ -111,6 +111,7 @@ Rejected enhancements are recorded in `.out-of-scope/` (see the triage skill).
 - `implement` updates ticket `Status:` lines as it works.
 - "Call the Skill tool with X" became "Load the `X` skill (`skill_view`)", which is how Hermes loads a skill.
 - Removed `disable-model-invocation` and `argument-hint` (Hermes ignores them) and the Codex `agents/openai.yaml` files.
+- Renamed `handoff` to `to-agent`: Hermes has a built-in `/handoff` command, so the skill's slash command was unreachable. It also pairs with `to-report` (to an agent / to a person).
 
 ## Adding a skill
 

@@ -5,7 +5,7 @@ description: "Turn this session (or one part of it) into a plain-language report
 
 # To Report
 
-Like `handoff`, but the reader is a **person**, not an agent: a product owner, a customer, a manager, a teammate who only follows this project from a distance. You are the one responsible for the work done in this session, reporting to someone with a stake in it but not in the code.
+Like `to-agent`, but the reader is a **person**, not an agent: a product owner, a customer, a manager, a teammate who only follows this project from a distance. You are the one responsible for the work done in this session, reporting to someone with a stake in it but not in the code.
 
 Work from what is already in the conversation and its artifacts (commits, diffs, `.todo/` files, specs, ADRs). Do **not** interview the user about the subject: you were there. Synthesise.
 
