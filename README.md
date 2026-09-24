@@ -16,6 +16,34 @@ skills:
 
 Every skill then shows up in `skills_list` and as a `/skill-name` command. `git pull` keeps them current.
 
+## The `locoder` profile
+
+The repo also ships a ready-made agent: [`config.yaml`](./config.yaml) (Hermes
+configuration) and [`SOUL.md`](./SOUL.md) (its identity). Together they turn
+these skills into a coding agent rather than a pile of markdown.
+
+Wire it up as a dedicated Hermes profile, symlinked so the checkout stays the
+single source of truth:
+
+```sh
+REPO=$(pwd)
+hermes profile create locoder --no-skills     # --no-skills: `hermes update` never writes into the repo
+P=~/.hermes/profiles/locoder
+mv $P/skills $P/bundled-skills                # keeps the seeded hermes-agent skill
+ln -s $REPO/skills      $P/skills
+ln -s $REPO/config.yaml $P/config.yaml
+ln -s $REPO/SOUL.md     $P/SOUL.md
+
+# the delegation target, for work too big for a local context
+cp -r ~/.hermes/skills/autonomous-ai-agents/claude-code \
+      $P/bundled-skills/autonomous-ai-agents/
+
+hermes -p locoder skills list                 # or just: locoder
+```
+
+`bundled-skills/` is a second read-only scan root, listed under
+`skills.external_dirs` in `config.yaml` as a profile-relative path.
+
 ## Skills
 
 ### Pipeline
