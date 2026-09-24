@@ -1,6 +1,6 @@
 ---
 name: to-report
-description: Turn this session (or one part of it) into a plain-language report for a non-technical reader: progress report, change summary, how-to, or explainer.
+description: "Turn this session (or one part of it) into a plain-language report for a non-technical reader: progress report, change summary, how-to, or explainer."
 ---
 
 # To Report
