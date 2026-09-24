@@ -1,0 +1,17 @@
+# Hermes runtime state written into the skills directory.
+#
+# The locoder profile symlinks ~/.hermes/profiles/locoder/skills -> ./skills,
+# so this checkout IS the profile's live skills tier. Hermes keeps bookkeeping
+# alongside the skills; none of it is source.
+skills/.hub/
+skills/.usage.json
+skills/.usage.json.lock
+skills/.bundled_manifest
+skills/.curator_state
+skills/.curator_ledger.jsonl
+skills/.archive/
+skills/.curator_backups/
+
+# Python bytecode from the user plugins Hermes loads out of plugins/.
+__pycache__/
+*.pyc

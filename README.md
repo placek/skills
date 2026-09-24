@@ -16,6 +16,85 @@ skills:
 
 Every skill then shows up in `skills_list` and as a `/skill-name` command. `git pull` keeps them current.
 
+## The `locoder` profile
+
+The repo also ships a ready-made agent: [`config.yaml`](./config.yaml) (Hermes
+configuration) and [`SOUL.md`](./SOUL.md) (its identity). Together they turn
+these skills into a coding agent rather than a pile of markdown.
+
+Wire it up as a dedicated Hermes profile, symlinked so the checkout stays the
+single source of truth:
+
+```sh
+REPO=$(pwd)
+hermes profile create locoder --no-skills     # --no-skills: `hermes update` never writes into the repo
+P=~/.hermes/profiles/locoder
+mv $P/skills $P/bundled-skills                # keeps the seeded hermes-agent skill
+ln -s $REPO/skills      $P/skills
+ln -s $REPO/config.yaml $P/config.yaml
+ln -s $REPO/SOUL.md     $P/SOUL.md
+
+# the delegation target, for work too big for a local context
+cp -r ~/.hermes/skills/autonomous-ai-agents/claude-code \
+      $P/bundled-skills/autonomous-ai-agents/
+
+hermes -p locoder skills list                 # or just: locoder
+```
+
+`bundled-skills/` is a second read-only scan root, listed under
+`skills.external_dirs` in `config.yaml` as a profile-relative path.
+
+### Web extraction with Defuddle
+
+[`plugins/web/defuddle/`](./plugins/web/defuddle/) is a Hermes web-provider
+plugin that routes every `web_extract` call through
+[kepano/defuddle](https://github.com/kepano/defuddle) — the main-content
+extractor behind Obsidian Web Clipper. It returns the article body as markdown
+instead of a page dump, which is what makes `/research` quote sources rather
+than sidebars. On Wikipedia's write-ahead logging page, the previous backend
+opened with the *"Find sources: …"* maintenance banner; Defuddle opens with the
+first sentence of the article.
+
+It needs the Node CLI, which is **not** bundled:
+
+```sh
+mkdir -p ~/.hermes/tools/defuddle && cd ~/.hermes/tools/defuddle && npm install defuddle
+ln -s $REPO/plugins ~/.hermes/profiles/locoder/plugins
+```
+
+The binary is found via `$HERMES_DEFUDDLE_BIN`, then `web.defuddle_bin`, then
+`$PATH`, then that vendored path. `config.yaml` pins `web.extract_backend:
+defuddle`; the provider is extract-only, so search keeps using its own backend.
+If the binary goes missing the whole batch fails, which trips Hermes' one-shot
+keyless rescue — extraction degrades to the keyless ring instead of breaking.
+
+Note the asymmetry with skills: **plugin** discovery uses `iterdir()`, which
+*does* follow symlinks, so linking `plugins/` (or a single plugin inside it)
+both work. Skill discovery uses `rglob`, which does not.
+
+Two things worth knowing before you change that layout:
+
+- **The `skills/` symlink must be the scan root.** Skill discovery is
+  `Path.rglob("**/SKILL.md")`, which refuses to descend into symlinked
+  *subdirectories* — a link dropped *inside* a skills dir finds nothing. Link
+  whole roots, or use `skills.external_dirs` (each entry is its own root).
+- **Hermes writes runtime state into the skills dir** (`.hub/`, `.usage.json`).
+  [`.gitignore`](./.gitignore) covers it.
+
+What `config.yaml` tunes, beyond the model/provider block:
+
+- `agent.coding_context: focus` — coding brief plus a live git snapshot, lean
+  coding toolset, non-coding skill categories demoted to names-only.
+- `agent.coding_instructions` — the standing rules that make these skills the
+  default method (`/ship`, `/tdd`, `/verify`, `.todo/`, delegation, research).
+- `agent.tool_use_enforcement` / `execution_guidance` forced **`true`**, not
+  `auto`: `auto` matches on the *model name* (`gpt`, `codex`, `qwen`, …), so a
+  locally-served model called `coder` silently gets neither.
+- `agent.verify_on_stop: auto` — the runtime half of the `verify` skill.
+- `skills.auto_load: [verify]` — the one rule that must never be a recall miss.
+- **Delegation to Claude Code** for work too big for a local context (see the
+  `claude-code` skill), and a keyless web-research ring for `research`.
+
 ## Skills
 
 ### Pipeline
@@ -49,8 +128,8 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ### Productivity
 
-- **[handoff](./skills/handoff/SKILL.md)**: Compact the conversation into a handoff doc for a fresh agent.
-- **[to-report](./skills/to-report/SKILL.md)**: Like handoff, but for a person: a plain-language progress report, change summary, how-to, or explainer from this session.
+- **[to-agent](./skills/to-agent/SKILL.md)**: Compact the conversation into a handoff doc for a fresh agent.
+- **[to-report](./skills/to-report/SKILL.md)**: Like `to-agent`, but for a person: a plain-language progress report, change summary, how-to, or explainer from this session.
 - **[wait-what](./skills/wait-what/SKILL.md)**: Make the agent re-pitch a message that didn't land.
 - **[to-questionnaire](./skills/to-questionnaire/SKILL.md)**: Turn a decision you can't make alone into a questionnaire for someone who can.
 - **[writing-for-agents](./skills/writing-for-agents/SKILL.md)**: How to write skills, `AGENTS.md`, and other docs agents read.
@@ -111,6 +190,7 @@ Rejected enhancements are recorded in `.out-of-scope/` (see the triage skill).
 - `implement` updates ticket `Status:` lines as it works.
 - "Call the Skill tool with X" became "Load the `X` skill (`skill_view`)", which is how Hermes loads a skill.
 - Removed `disable-model-invocation` and `argument-hint` (Hermes ignores them) and the Codex `agents/openai.yaml` files.
+- Renamed `handoff` to `to-agent`: Hermes has a built-in `/handoff` command, so the skill's slash command was unreachable. It also pairs with `to-report` (to an agent / to a person).
 
 ## Adding a skill
 
