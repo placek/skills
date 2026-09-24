@@ -18,6 +18,10 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ## Skills
 
+### Pipeline
+
+- **[ship](./skills/ship/SKILL.md)**: Run a feature end to end through the skills below: vision → plan → acceptance → implement → verify → document → report → finish. Three gates (after vision, plan, and the red acceptance tests), then it runs unattended. Re-run `/ship <feature>` to resume from `.todo/<feature>/`.
+
 ### Planning
 
 - **[grill-me](./skills/grill-me/SKILL.md)**: Get relentlessly interviewed about a plan or design.
@@ -35,6 +39,7 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 - **[tdd](./skills/tdd/SKILL.md)**: Red-green loop at pre-agreed seams.
 - **[refactor](./skills/refactor/SKILL.md)**: Behaviour-preserving cleanup in small test-gated steps; green before, green after, revert on red.
 - **[code-review](./skills/code-review/SKILL.md)**: Two-axis review (standards and spec) of a diff, run as parallel sub-agents.
+- **[verify](./skills/verify/SKILL.md)**: Evidence before claims: run the proof, read the output, then say it's done.
 - **[diagnosing-bugs](./skills/diagnosing-bugs/SKILL.md)**: Feedback-loop-first diagnosis for hard bugs and performance regressions.
 - **[codebase-design](./skills/codebase-design/SKILL.md)**: Deep-module vocabulary: module, interface, depth, seam, adapter.
 - **[improve-codebase-architecture](./skills/improve-codebase-architecture/SKILL.md)**: Find deepening opportunities and show them as an HTML report.
@@ -52,7 +57,7 @@ Every skill then shows up in `skills_list` and as a `/skill-name` command. `git 
 
 ### Typical flow
 
-`/grill-with-docs` → `/to-spec` → `/to-tickets` → `/implement` (uses `tdd` and `code-review`). For work too big for one session, start with `/wayfinder`.
+`/ship <feature>` runs the whole chain: `grill-with-docs` → `to-spec` → `to-tickets` → `tdd` outer loop (failing acceptance tests) → `implement` (inner red-green loop per ticket) → `verify` + `code-review` → docs and `domain-modeling` → `to-report` → merge / PR menu. Each step is also a skill you can run on its own. For work too big for one session, start with `/wayfinder`.
 
 ## Issues: the `.todo/` directory
 
@@ -101,7 +106,7 @@ Rejected enhancements are recorded in `.out-of-scope/` (see the triage skill).
 ## Changes from upstream
 
 - Dropped: `ask-matt`, `setup-matt-pocock-skills`, `teach`, `wizard`, and everything in upstream's `misc/`, `in-progress/`, and `deprecated/`.
-- Added: `refactor` and `to-report` (not from upstream; distilled from other public skills, credited inside each).
+- Added: `refactor`, `to-report`, `verify` and `ship` (not from upstream; distilled from other public skills, credited inside each). `ship` is the superpowers-style pipeline over the rest.
 - The GitHub, GitLab, and "configure your tracker" branches are gone. `to-spec`, `to-tickets`, `triage`, `wayfinder`, `code-review`, and `implement` use `.todo/` directly.
 - `implement` updates ticket `Status:` lines as it works.
 - "Call the Skill tool with X" became "Load the `X` skill (`skill_view`)", which is how Hermes loads a skill.

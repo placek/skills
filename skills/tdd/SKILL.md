@@ -25,6 +25,10 @@ Ask: "What's the public interface, and which seams should we test?"
 
 When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), load the `codebase-design` skill (`skill_view`) for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
 
+## Two loops
+
+The red-green loop above is the **inner loop**. Outside-in TDD adds an **outer loop**: acceptance tests written first at the highest seam, one per user story, asserting an outcome the actor can observe, all red until the feature exists. The inner loop fills them in one slice at a time; a slice is done when its acceptance test goes green. The `ship` skill runs both loops; on its own this skill is the inner one. Acceptance tests may change as implementation settles details the spec left open, but never to loosen an outcome: that is the tautological test below.
+
 ## Anti-patterns
 
 - **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.
