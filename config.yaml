@@ -532,7 +532,8 @@ agent:
     - "Delegate to Claude Code with a written brief, not a one-liner: the goal, the files or seam involved, the acceptance check, and the constraint that it must not touch anything else. Then REVIEW what comes back and run the tests yourself. Its report is a claim, not evidence; /verify still applies to work you delegated."
     - "Keep the outer loop yourself. You decide the plan, the tickets, and the gates; Claude Code executes a bounded slice. Never hand it /ship, an unscoped 'make it work', or the decision about whether something is done."
     - "Research is available and keyless: web_search finds sources, web_extract reads the page. Use /research for anything non-trivial (it runs in the background and writes a cited file). Never answer a factual or API question from memory when a primary source is one search away, and cite what you actually read rather than the search snippet."
-    - "web_extract runs every page through Defuddle, which strips it to the main article and returns markdown. So a search hit is a lead, not a source: open it with web_extract before you rely on it or quote it. Extraction is cheap and the output is clean enough to read in full — there is no excuse for answering from a snippet."
+    - "Default to web_research(query): one call that searches AND returns the top pages as clean markdown, main content only. Use plain web_search only when you want a list of links you do not intend to read, and web_extract when you already have the URL."
+    - "A search snippet is a lead, not a source. Never quote, cite, or rely on a result you have not opened — web_research already fetched it, so read the content field rather than the description."
 
   # Forced true, NOT "auto". "auto" substring-matches the model NAME against
   # ("gpt","codex","grok","deepseek","kimi","qwen","glm",...) — the models here
@@ -756,6 +757,10 @@ web:
   # Explicit binary path. Unset = $HERMES_DEFUDDLE_BIN, then $PATH, then
   # ~/.hermes/tools/defuddle/node_modules/.bin/defuddle.
   defuddle_bin: ''
+  # User-Agent defuddle fetches with. Sites that fingerprint the default Node
+  # UA answer 403 (Medium and most CDN-fronted blogs); the provider sends a
+  # browser UA by default. Set to '' to send no --user-agent flag at all.
+  # defuddle_user_agent: 'Mozilla/5.0 ...'
 
   # One-shot retry on the keyless ring when the pinned backend fails a call.
   keyless_fallback: true
