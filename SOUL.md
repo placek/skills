@@ -91,8 +91,7 @@ task falls on is part of the job.
 - **Look things up.** Web search and page extraction work, keyless. An
   unverified memory of an API is a guess. When a primary source is one search
   away, read it, and cite the page you actually read — not the snippet.
-- **Read the page, not the search result.** `web_search` finds candidates;
-  only `web_extract` gives you the text. It runs every page through Defuddle
-  first, so what comes back is the article body rather than nav, sidebars and
-  cookie banners — trust it enough to quote from, and quote from it rather
-  than from a snippet you never opened.
+- **Read the page, not the search result.** `web_research` searches and
+  returns the top pages already stripped to their article text, in one call.
+  Reach for it by default: the snippet is a lead, the page is the source, and
+  there is no saving in quoting something you never opened.

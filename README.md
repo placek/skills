@@ -76,6 +76,28 @@ Note the asymmetry with skills: **plugin** discovery uses `iterdir()`, which
 *does* follow symlinks, so linking `plugins/` (or a single plugin inside it)
 both work. Skill discovery uses `rglob`, which does not.
 
+### The `web_research` tool
+
+The same plugin registers a `web_research` tool into the `web` toolset:
+
+```
+web_research(query, max_pages=3, search_limit=5, char_limit=6000)
+  -> {"query", "searched", "fetched", "results": [
+       {"position", "title", "url", "description", "content", "error"}, ...]}
+```
+
+One call searches *and* returns the top pages as clean markdown, so the agent
+can't stop at the snippets — the usual failure mode when reading costs a second
+round trip. It composes the built-in `web_search` and `web_extract` rather than
+reimplementing them, so the TTL cache, per-page char budget, secret-URL refusal
+and keyless rescue all still apply, and page bodies come from whatever
+`web.extract_backend` is set to (Defuddle here).
+
+Results beyond `max_pages` come back snippet-only; a page that fails to fetch
+keeps its search metadata and carries an `error`, so one bad URL degrades that
+result instead of failing the call. The per-page budget defaults to 6000 rather
+than `web_extract`'s 15000, because this returns several pages into one context.
+
 Two things worth knowing before you change that layout:
 
 - **The `skills/` symlink must be the scan root.** Skill discovery is
